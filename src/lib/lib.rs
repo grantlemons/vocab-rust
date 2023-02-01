@@ -113,11 +113,11 @@ fn parse_html(html: String) -> Result<Response, scraper::error::SelectorErrorKin
                 .filter(|e| !e.is_empty())
                 .collect::<Vec<_>>()
         })
-        .filter(|a| a.len() > 3 || a.len() == 1)
+        .filter(|r| r.len() > 3 || r.len() == 1)
         .collect::<Vec<Vec<_>>>();
     let definitions = rows
         .chunks(3)
-        .map(|e| e.into_iter().flatten().collect::<Vec<_>>())
+        .map(|r| r.into_iter().flatten().collect::<Vec<_>>())
         .collect::<Vec<_>>();
 
     let mut response = Response {
