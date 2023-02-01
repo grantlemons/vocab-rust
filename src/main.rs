@@ -67,7 +67,7 @@ async fn main() -> Result<(), ()> {
             "",
             def.from.part,
             "",
-            format!("({})", def.from.definition),
+            format!("{} (WR)", def.from.definition),
             ""
         );
     }
