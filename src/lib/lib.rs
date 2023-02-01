@@ -155,3 +155,35 @@ pub async fn get_def(
     let html = get_html(word, from, to).await.unwrap();
     Ok(parse_html(html).unwrap())
 }
+
+#[cfg(test)]
+mod tests {
+    #[tokio::test]
+    async fn test_delantal() -> Result<(), ()> {
+        crate::get_def("delantal".to_string(), None, None).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_nuevo() -> Result<(), ()> {
+        crate::get_def("nuevo".to_string(), None, None).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_palabra() -> Result<(), ()> {
+        let res = crate::get_def("palabra".to_string(), None, None).await?;
+        for def in res.definitions {
+            let en_example = def.to.example;
+            assert_ne!(en_example, "n");
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[ignore]
+    async fn english_to_spanish() -> Result<(), ()> {
+        crate::get_def("brick".to_string(), None, None).await?;
+        Ok(())
+    }
+}
