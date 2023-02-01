@@ -6,7 +6,7 @@ use std::str::FromStr;
 use reqwest::header::USER_AGENT;
 use scraper::{Html, Selector};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// Language options
 pub enum Language {
     /// English
@@ -29,7 +29,7 @@ impl FromStr for Language {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Struct that represents a definition in a language
 pub struct LanguageDefinition {
     /// What language this struct is for
@@ -44,7 +44,7 @@ pub struct LanguageDefinition {
     pub example: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Struct that represents a definition in both from and to languages
 pub struct Definition {
     /// The information in the "from" language
