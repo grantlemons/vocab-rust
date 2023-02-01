@@ -1,11 +1,10 @@
 //! Library for retrieving data from wordreference.com
 #![warn(missing_docs)]
-#![allow(dead_code)] // Remove after full implementation
 
 use std::str::FromStr;
 
 use reqwest::header::USER_AGENT;
-use scraper::{ElementRef, Html, Selector};
+use scraper::{Html, Selector};
 
 #[derive(Debug, PartialEq)]
 /// Language options
@@ -30,33 +29,35 @@ impl FromStr for Language {
     }
 }
 
-impl Language {
-    fn from_element(element: ElementRef) -> Result<Self, ()> {
-        Language::from_str(element.text().next().unwrap())
-    }
-}
-
 #[derive(Debug)]
 /// Struct that represents a definition in a language
 pub struct LanguageDefinition {
-    language: Language,
-    word: String,
-    part: String,
-    definition: String,
-    example: String,
+    /// What language this struct is for
+    pub language: Language,
+    /// The word in question
+    pub word: String,
+    /// Part of speech
+    pub part: String,
+    /// Word's definition
+    pub definition: String,
+    /// An example of the word used in a sentence
+    pub example: String,
 }
 
 #[derive(Debug)]
 /// Struct that represents a definition in both from and to languages
 pub struct Definition {
-    from: LanguageDefinition,
-    to: LanguageDefinition,
+    /// The information in the "from" language
+    pub from: LanguageDefinition,
+    /// The information in the "to" language
+    pub to: LanguageDefinition,
 }
 
 #[derive(Debug)]
 /// Struct representing a result from wordreference.com
 pub struct Response {
-    definitions: Vec<Definition>,
+    /// Vector of all definitions from webpage
+    pub definitions: Vec<Definition>,
 }
 
 /// Fetches HTML webpage from wordreference.com
