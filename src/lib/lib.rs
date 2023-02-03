@@ -6,6 +6,9 @@ use std::str::FromStr;
 use reqwest::header::USER_AGENT;
 use scraper::{Html, Selector};
 
+mod parsers;
+use parsers::*;
+
 #[derive(Debug, PartialEq, Clone)]
 /// Language options
 pub enum Language {
