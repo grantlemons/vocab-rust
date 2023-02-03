@@ -1,42 +1,16 @@
 //! Library for retrieving data from wordreference.com
 #![warn(missing_docs)]
 
-use std::str::FromStr;
-
+use regex::Regex;
 use reqwest::header::USER_AGENT;
-use scraper::{Html, Selector};
+use scraper::{ElementRef, Html, Selector};
 
 mod parsers;
 use parsers::*;
 
-#[derive(Debug, PartialEq, Clone)]
-/// Language options
-pub enum Language {
-    /// English
-    EN,
-    /// Spanish
-    ES,
-}
-
-impl FromStr for Language {
-    type Err = ();
-
-    fn from_str(input_string: &str) -> Result<Self, Self::Err> {
-        match input_string.to_lowercase().as_str() {
-            "english" => Ok(Self::EN),
-            "spanish" => Ok(Self::ES),
-            "en" => Ok(Self::EN),
-            "es" => Ok(Self::ES),
-            _ => Err(()),
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 /// Struct that represents a definition in a language
 pub struct LanguageDefinition {
-    /// What language this struct is for
-    pub language: Language,
     /// The word in question
     pub word: String,
     /// Part of speech
@@ -44,7 +18,7 @@ pub struct LanguageDefinition {
     /// Word's definition
     pub definition: String,
     /// An example of the word used in a sentence
-    pub example: String,
+    pub example: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -92,63 +66,40 @@ pub async fn get_html(
 fn parse_html(html: String) -> Result<Response, String> {
     let document: Html = Html::parse_document(html.as_str());
     validate_word(&document)?;
-    let table_selector: Selector =
-        Selector::parse(r#"table[class="WRD noTapHighlight"]"#).expect("Parsing 'table' failed");
+    let table_selector: Selector = Selector::parse(r#"table[class="WRD noTapHighlight"]"#)
+        .expect("Creating table selector failed");
+    let row_selector: Selector =
+        Selector::parse(r#"tr[class="even"],[class="odd"]"#).expect("Creating row selector failed");
 
-    let tr_selector: Selector = Selector::parse("tr").expect("Parsing 'tr' failed");
-    let td_selector: Selector = Selector::parse("td").expect("Parsing 'td' failed");
-    let table = document.select(&table_selector).next().unwrap();
+    let table: ElementRef = document.select(&table_selector).next().unwrap();
 
-    let elements = table
-        .select(&td_selector)
-        .skip(1)
-        .flat_map(|td| {
-            td.text()
-                .map(|e| e.trim().replace(&['(', ')'][..], ""))
-                .filter(|e| !e.is_empty())
-        })
-        .collect::<Vec<_>>();
+    let mut entries: Vec<Definition> = Vec::new();
+    let mut entry: Vec<String> = Vec::new();
+    // first row is always even
+    let mut last_row_even: bool = true;
+    let is_even_re = Regex::new(r#"class="even""#).unwrap();
+    for row in table.select(&row_selector) {
+        let text = &row.html();
+        let is_even = is_even_re.is_match(text);
 
-    let rows = table
-        .select(&tr_selector)
-        .skip(2)
-        .map(|tr| {
-            tr.text()
-                .map(|e| e.trim().replace(&['(', ')'][..], ""))
-                .filter(|e| !e.is_empty())
-                .collect::<Vec<_>>()
-        })
-        .filter(|r| r.len() > 3 || r.len() == 1)
-        .collect::<Vec<Vec<_>>>();
-    let definitions = rows
-        .chunks(3)
-        .map(|r| r.iter().flatten().collect::<Vec<_>>())
-        .collect::<Vec<_>>();
+        let row_type_matches_last: bool = last_row_even == is_even;
+        if row_type_matches_last {
+            entry.push(text.to_owned());
+        } else {
+            entries.push(parse_entry(&entry));
+            entry = vec![text.to_owned()];
+        }
 
-    let mut response = Response {
-        definitions: Vec::new(),
-    };
-
-    for def in definitions {
-        response.definitions.push(Definition {
-            from: LanguageDefinition {
-                language: Language::from_str(elements[0].as_str()).unwrap(),
-                word: def[0].clone(),
-                part: def[1].clone(),
-                definition: def[2].clone(),
-                example: def[5].clone(),
-            },
-            to: LanguageDefinition {
-                language: Language::from_str(elements[1].as_str()).unwrap(),
-                word: def[3].clone(),
-                part: def[4].clone(),
-                definition: def[4].clone(),
-                example: def[6].clone(),
-            },
-        })
+        // update last var
+        last_row_even = is_even;
     }
-
-    Ok(response)
+    if !entry.is_empty() {
+        entries.push(parse_entry(&entry));
+    }
+    // println!("{:#?}", entries);
+    Ok(Response {
+        definitions: entries,
+    })
 }
 
 /// Takes a word and returns a [`Response`] struct
@@ -166,7 +117,7 @@ fn validate_word(document: &Html) -> Result<bool, String> {
         Selector::parse(r#"p[id="noEntryFound"]"#).expect("Creating noEntryFound selector failed");
     let is_found: bool = document.select(&validation_selector).next().is_some();
     match is_found {
-        true => Err("No entry found".to_string()),
+        true => Err("Word not found".to_string()),
         false => Ok(true),
     }
 }
@@ -213,7 +164,7 @@ mod tests {
                 assert_eq!(res.definitions.len(), 2);
                 for def in res.definitions {
                     let en_example = def.to.example;
-                    assert_ne!(en_example, "n");
+                    assert_ne!(en_example[0], "n");
                 }
                 Ok(())
             }

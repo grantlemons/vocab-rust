@@ -1,56 +1,111 @@
-use crate::{Definition, Language, LanguageDefinition};
-use scraper::{ElementRef, Html, Selector};
+use crate::{Definition, LanguageDefinition};
+use scraper::{Html, Selector};
 
-fn parse_from_language(entry: &ElementRef) -> Language {
-    todo!()
+fn parse_from_word(entry: &Html) -> String {
+    let selector: Selector = Selector::parse("strong").unwrap();
+    entry
+        .select(&selector)
+        .next()
+        .unwrap()
+        .text()
+        .next()
+        .unwrap()
+        .trim()
+        .to_string()
 }
-fn parse_to_language(entry: &ElementRef) -> Language {
-    todo!()
-}
-
-fn parse_from_word(entry: &ElementRef) -> String {
-    todo!()
-}
-fn parse_to_word(entry: &ElementRef) -> String {
-    todo!()
-}
-
-fn parse_from_part(entry: &ElementRef) -> String {
-    todo!()
-}
-fn parse_to_part(entry: &ElementRef) -> String {
-    todo!()
-}
-
-fn parse_from_definition(entry: &ElementRef) -> String {
-    todo!()
-}
-fn parse_to_definition(entry: &ElementRef) -> String {
-    todo!()
+fn parse_to_word(entry: &Html) -> String {
+    let selector: Selector = Selector::parse("td.ToWrd").unwrap();
+    entry
+        .select(&selector)
+        .map(|e| e.text().next().unwrap().trim())
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
-fn parse_from_example(entry: &ElementRef) -> String {
-    todo!()
+fn parse_from_part(entry: &Html) -> String {
+    let selector: Selector = Selector::parse("td.FrWrd").unwrap();
+    let em_selector: Selector = Selector::parse("em").unwrap();
+    entry
+        .select(&selector)
+        .next()
+        .unwrap()
+        .select(&em_selector)
+        .next()
+        .unwrap()
+        .text()
+        .next()
+        .unwrap()
+        .trim()
+        .to_string()
 }
-fn parse_to_example(entry: &ElementRef) -> String {
-    todo!()
+fn parse_to_part(entry: &Html) -> String {
+    let selector: Selector = Selector::parse("td.ToWrd").unwrap();
+    let em_selector: Selector = Selector::parse("em").unwrap();
+    entry
+        .select(&selector)
+        .next()
+        .unwrap()
+        .select(&em_selector)
+        .map(|e| e.text().next().unwrap().trim())
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
-fn parse_entry(entry: &ElementRef) -> Definition {
+fn parse_from_definition(entry: &Html) -> String {
+    let selector: Selector = Selector::parse("td").unwrap();
+    entry
+        .select(&selector)
+        .nth(1)
+        .unwrap()
+        .text()
+        .next()
+        .unwrap()
+        .replace(&['(', ')'][..], "")
+        .trim()
+        .to_string()
+}
+fn parse_to_definition(entry: &Html) -> String {
+    parse_to_word(entry)
+}
+
+fn parse_from_example(entry: &Html) -> Vec<String> {
+    let selector: Selector = Selector::parse("td.FrEx").unwrap();
+    let span_selector: Selector = Selector::parse("span").unwrap();
+    entry
+        .select(&selector)
+        .next()
+        .unwrap()
+        .select(&span_selector)
+        .map(|e| e.text().next().unwrap().trim().to_string())
+        .collect::<Vec<_>>()
+}
+fn parse_to_example(entry: &Html) -> Vec<String> {
+    let selector: Selector = Selector::parse("td.ToEx").unwrap();
+    let span_selector: Selector = Selector::parse("span").unwrap();
+    entry
+        .select(&selector)
+        .next()
+        .unwrap()
+        .select(&span_selector)
+        .map(|e| e.text().next().unwrap().trim().to_string())
+        .collect::<Vec<_>>()
+}
+
+pub fn parse_entry(entry: &[String]) -> Definition {
+    let fragment: String = format!("<table><tbody>{}</tbody></table>", entry.join(""));
+    let html = Html::parse_fragment(&fragment);
     Definition {
         from: LanguageDefinition {
-            language: parse_from_language(entry),
-            word: parse_from_word(entry),
-            part: parse_from_part(entry),
-            definition: parse_from_definition(entry),
-            example: parse_from_example(entry),
+            word: parse_from_word(&html),
+            part: parse_from_part(&html),
+            definition: parse_from_definition(&html),
+            example: parse_from_example(&html),
         },
         to: LanguageDefinition {
-            language: parse_to_language(entry),
-            word: parse_to_word(entry),
-            part: parse_to_part(entry),
-            definition: parse_to_definition(entry),
-            example: parse_to_example(entry),
+            word: parse_to_word(&html),
+            part: parse_to_part(&html),
+            definition: parse_to_definition(&html),
+            example: parse_to_example(&html),
         },
     }
 }
