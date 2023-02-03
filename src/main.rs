@@ -14,7 +14,8 @@ async fn main() -> Result<(), ()> {
     let mut chosen_definitions: Vec<Definition> = Vec::new();
 
     clear_term();
-    choose_words(&mut words).await?;
+    stdout().execute(cursor::MoveTo(0, 0)).unwrap();
+    while !choose_word(&mut words).await? {}
     for word in words {
         clear_term();
         stdout().execute(cursor::MoveTo(0, 0)).unwrap();
@@ -32,22 +33,21 @@ fn clear_term() {
         .unwrap();
 }
 
-async fn choose_words(words: &mut Vec<Response>) -> Result<(), ()> {
-    stdout().execute(cursor::MoveTo(0, 0)).unwrap();
-    loop {
-        print!("Word {}: ", words.len() + 1);
-        let input: String = read!("{}\n");
+/// Present the user with a menu for selecting a word
+async fn choose_word(words: &mut Vec<Response>) -> Result<bool, ()> {
+    print!("Word {}: ", words.len() + 1);
+    let input: String = read!("{}\n");
 
-        if !input.is_empty() {
-            let definitions = wr::get_def(input, None, None).await?;
-            words.push(definitions);
-        } else {
-            break;
-        }
+    if !input.is_empty() {
+        let definitions = wr::get_def(input, None, None).await?;
+        words.push(definitions);
+        Ok(true)
+    } else {
+        Ok(false)
     }
-    Ok(())
 }
 
+/// Present to the user a menu for selecting the intended definition from the possible ones for a chosen word
 fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) {
     println!("Definition options for {}", word.definitions[0].from.word);
     println!("========================================================================");
@@ -68,6 +68,7 @@ fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) 
     chosen_definitions.push(word.definitions.get(input - 1).unwrap().clone());
 }
 
+/// Print a formatted table of words, parts of speech, and definitions
 fn print_definitions(chosen_definitions: &Vec<Definition>) {
     stdout().execute(cursor::MoveTo(0, 0)).unwrap();
     println!(
