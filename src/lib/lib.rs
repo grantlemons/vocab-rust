@@ -71,34 +71,33 @@ fn parse_html(html: String) -> Result<Response, String> {
     let row_selector: Selector =
         Selector::parse(r#"tr[class="even"],[class="odd"]"#).expect("Creating row selector failed");
 
-    let tables = document.select(&table_selector);
+    let table = document.select(&table_selector).next().unwrap();
 
     let mut entries: Vec<Definition> = Vec::new();
     let mut entry: Vec<String> = Vec::new();
 
-    for table in tables.take(2) {
-        // first row is always even
-        let mut last_row_even: bool = true;
-        let is_even_re = Regex::new(r#"class="even""#).unwrap();
-        for row in table.select(&row_selector) {
-            let text = &row.html();
-            let is_even = is_even_re.is_match(text);
+    // first row is always even
+    let mut last_row_even: bool = true;
+    let is_even_re = Regex::new(r#"class="even""#).unwrap();
+    for row in table.select(&row_selector) {
+        let text = &row.html();
+        let is_even = is_even_re.is_match(text);
 
-            let row_type_matches_last: bool = last_row_even == is_even;
-            if row_type_matches_last {
-                entry.push(text.to_owned());
-            } else {
-                entries.push(parse_entry(&entry));
-                entry = vec![text.to_owned()];
-            }
-
-            // update last var
-            last_row_even = is_even;
-        }
-        if !entry.is_empty() {
+        let row_type_matches_last: bool = last_row_even == is_even;
+        if row_type_matches_last {
+            entry.push(text.to_owned());
+        } else {
             entries.push(parse_entry(&entry));
+            entry = vec![text.to_owned()];
         }
+
+        // update last var
+        last_row_even = is_even;
     }
+    if !entry.is_empty() {
+        entries.push(parse_entry(&entry));
+    }
+
     Ok(Response {
         definitions: entries,
     })
@@ -130,7 +129,7 @@ mod tests {
     async fn test_delantal() -> Result<(), String> {
         match crate::get_def("delantal".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 3);
+                assert_eq!(res.definitions.len(), 2);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -141,7 +140,7 @@ mod tests {
     async fn test_entregar() -> Result<(), String> {
         match crate::get_def("entregar".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 14);
+                assert_eq!(res.definitions.len(), 11);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -152,7 +151,7 @@ mod tests {
     async fn test_nuevo() -> Result<(), String> {
         match crate::get_def("nuevo".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 7);
+                assert_eq!(res.definitions.len(), 4);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -163,7 +162,7 @@ mod tests {
     async fn test_palabra() -> Result<(), String> {
         match crate::get_def("palabra".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 4);
+                assert_eq!(res.definitions.len(), 2);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -202,7 +201,7 @@ mod tests {
     async fn english_to_spanish_brick() -> Result<(), String> {
         match crate::get_def("brick".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 7);
+                assert_eq!(res.definitions.len(), 3);
                 Ok(())
             }
             Err(err) => Err(err),

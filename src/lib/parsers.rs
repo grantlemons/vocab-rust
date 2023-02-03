@@ -25,18 +25,16 @@ fn parse_to_word(entry: &Html) -> String {
 fn parse_from_part(entry: &Html) -> String {
     let selector: Selector = Selector::parse("td.FrWrd").unwrap();
     let em_selector: Selector = Selector::parse("em").unwrap();
-    entry
+    match entry
         .select(&selector)
         .next()
         .unwrap()
         .select(&em_selector)
         .next()
-        .unwrap()
-        .text()
-        .next()
-        .unwrap()
-        .trim()
-        .to_string()
+    {
+        Some(val) => val.text().next().unwrap().trim().to_string(),
+        None => "".to_string(),
+    }
 }
 fn parse_to_part(entry: &Html) -> String {
     let selector: Selector = Selector::parse("td.ToWrd").unwrap();

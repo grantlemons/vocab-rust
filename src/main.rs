@@ -15,6 +15,7 @@ async fn main() -> Result<(), String> {
 
     clear_term();
     stdout().execute(cursor::MoveTo(0, 0)).unwrap();
+    println!("Enter an empty line to continue.\n===============");
     while choose_word(&mut words).await? {}
     for word in words {
         clear_term();
