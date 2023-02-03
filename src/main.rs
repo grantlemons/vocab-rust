@@ -15,15 +15,16 @@ async fn main() -> Result<(), String> {
 
     clear_term();
     stdout().execute(cursor::MoveTo(0, 0)).unwrap();
-    while !choose_word(&mut words).await? {}
+    while choose_word(&mut words).await? {}
     for word in words {
         clear_term();
         stdout().execute(cursor::MoveTo(0, 0)).unwrap();
         choose_definition(&word, &mut chosen_definitions);
     }
     clear_term();
-    print_definitions(&chosen_definitions);
-
+    if !chosen_definitions.is_empty() {
+        print_definitions(&chosen_definitions);
+    }
     Ok(())
 }
 
@@ -49,21 +50,24 @@ async fn choose_word(words: &mut Vec<Response>) -> Result<bool, String> {
 
 /// Present to the user a menu for selecting the intended definition from the possible ones for a chosen word
 fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) {
-    println!("Definition options for {}", word.definitions[0].from.word);
-    println!("========================================================================");
-    for (index, def) in word.definitions.iter().enumerate() {
-        println!(
-            "{}: {} ({})  --  {}  --  \"{}\" / \"{}\"",
-            index + 1,
-            def.from.word,
-            def.from.part,
-            def.from.definition,
-            def.from.example,
-            def.to.example
-        );
+    let mut input: usize = 1;
+    if word.definitions.len() > 1 {
+        println!("Definition options for {}", word.definitions[0].from.word);
+        println!("========================================================================");
+        for (index, def) in word.definitions.iter().enumerate() {
+            println!(
+                "{:<3} {:<15} {:<10} {:<40} {:?} / {:?}",
+                format!("{}:", index + 1),
+                def.from.word,
+                format!("({})", def.from.part),
+                def.from.definition,
+                def.from.example,
+                def.to.example
+            );
+        }
+        print!("Index: ");
+        input = read!("{}\n");
     }
-    print!("Index: ");
-    let input: usize = read!("{}\n");
 
     chosen_definitions.push(word.definitions.get(input - 1).unwrap().clone());
 }
