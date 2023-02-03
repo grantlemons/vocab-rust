@@ -58,7 +58,7 @@ fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) 
         for (index, def) in word.definitions.iter().enumerate() {
             println!(
                 "{:<3} {:<15} {:<10} {:<40} {:?} / {:?}",
-                format!("{}:", index + 1),
+                format!("{:>3}", format!("{}:", index + 1)),
                 def.from.word,
                 format!("({})", def.from.part),
                 def.from.definition,
