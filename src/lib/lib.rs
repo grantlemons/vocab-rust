@@ -88,7 +88,7 @@ pub async fn get_html(
 /// Parse HTML webpage into [`Response`] object
 fn parse_html(html: String) -> Result<Response, String> {
     let document: Html = Html::parse_document(html.as_str());
-    validate_word()?;
+    validate_word(&document)?;
     let table_selector: Selector =
         Selector::parse(r#"table[class="WRD noTapHighlight"]"#).expect("Parsing 'table' failed");
 
@@ -158,10 +158,13 @@ pub async fn get_def(
     parse_html(html)
 }
 
-fn validate_word() -> Result<bool, String> {
-    match Selector::parse(r#"p[id="noEntryFound"]"#) {
-        Ok(_) => Err("".to_string()),
-        Err(_) => Ok(true),
+fn validate_word(document: &Html) -> Result<bool, String> {
+    let validation_selector =
+        Selector::parse(r#"p[id="noEntryFound"]"#).expect("Creating noEntryFound selector failed");
+    let is_found: bool = document.select(&validation_selector).next().is_some();
+    match is_found {
+        true => Err("No entry found".to_string()),
+        false => Ok(true),
     }
 }
 
