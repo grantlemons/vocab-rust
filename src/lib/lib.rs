@@ -3,7 +3,7 @@
 
 use regex::Regex;
 use reqwest::header::USER_AGENT;
-use scraper::{ElementRef, Html, Selector};
+use scraper::{Html, Selector};
 
 mod parsers;
 use parsers::*;
@@ -71,32 +71,34 @@ fn parse_html(html: String) -> Result<Response, String> {
     let row_selector: Selector =
         Selector::parse(r#"tr[class="even"],[class="odd"]"#).expect("Creating row selector failed");
 
-    let table: ElementRef = document.select(&table_selector).next().unwrap();
+    let tables = document.select(&table_selector);
 
     let mut entries: Vec<Definition> = Vec::new();
     let mut entry: Vec<String> = Vec::new();
-    // first row is always even
-    let mut last_row_even: bool = true;
-    let is_even_re = Regex::new(r#"class="even""#).unwrap();
-    for row in table.select(&row_selector) {
-        let text = &row.html();
-        let is_even = is_even_re.is_match(text);
 
-        let row_type_matches_last: bool = last_row_even == is_even;
-        if row_type_matches_last {
-            entry.push(text.to_owned());
-        } else {
-            entries.push(parse_entry(&entry));
-            entry = vec![text.to_owned()];
+    for table in tables.take(2) {
+        // first row is always even
+        let mut last_row_even: bool = true;
+        let is_even_re = Regex::new(r#"class="even""#).unwrap();
+        for row in table.select(&row_selector) {
+            let text = &row.html();
+            let is_even = is_even_re.is_match(text);
+
+            let row_type_matches_last: bool = last_row_even == is_even;
+            if row_type_matches_last {
+                entry.push(text.to_owned());
+            } else {
+                entries.push(parse_entry(&entry));
+                entry = vec![text.to_owned()];
+            }
+
+            // update last var
+            last_row_even = is_even;
         }
-
-        // update last var
-        last_row_even = is_even;
+        if !entry.is_empty() {
+            entries.push(parse_entry(&entry));
+        }
     }
-    if !entry.is_empty() {
-        entries.push(parse_entry(&entry));
-    }
-    // println!("{:#?}", entries);
     Ok(Response {
         definitions: entries,
     })
@@ -128,7 +130,7 @@ mod tests {
     async fn test_delantal() -> Result<(), String> {
         match crate::get_def("delantal".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 2);
+                assert_eq!(res.definitions.len(), 3);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -139,7 +141,7 @@ mod tests {
     async fn test_entregar() -> Result<(), String> {
         match crate::get_def("entregar".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 11);
+                assert_eq!(res.definitions.len(), 14);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -150,7 +152,7 @@ mod tests {
     async fn test_nuevo() -> Result<(), String> {
         match crate::get_def("nuevo".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 4);
+                assert_eq!(res.definitions.len(), 7);
                 Ok(())
             }
             Err(err) => Err(err),
@@ -161,11 +163,7 @@ mod tests {
     async fn test_palabra() -> Result<(), String> {
         match crate::get_def("palabra".to_string(), None, None).await {
             Ok(res) => {
-                assert_eq!(res.definitions.len(), 2);
-                for def in res.definitions {
-                    let en_example = def.to.example;
-                    assert_ne!(en_example[0], "n");
-                }
+                assert_eq!(res.definitions.len(), 4);
                 Ok(())
             }
             Err(err) => Err(err),

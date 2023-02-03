@@ -71,24 +71,24 @@ fn parse_to_definition(entry: &Html) -> String {
 fn parse_from_example(entry: &Html) -> Vec<String> {
     let selector: Selector = Selector::parse("td.FrEx").unwrap();
     let span_selector: Selector = Selector::parse("span").unwrap();
-    entry
-        .select(&selector)
-        .next()
-        .unwrap()
-        .select(&span_selector)
-        .map(|e| e.text().next().unwrap().trim().to_string())
-        .collect::<Vec<_>>()
+    match entry.select(&selector).next() {
+        Some(val) => val
+            .select(&span_selector)
+            .map(|e| e.text().next().unwrap().trim().to_string())
+            .collect::<Vec<_>>(),
+        None => Vec::new(),
+    }
 }
 fn parse_to_example(entry: &Html) -> Vec<String> {
     let selector: Selector = Selector::parse("td.ToEx").unwrap();
     let span_selector: Selector = Selector::parse("span").unwrap();
-    entry
-        .select(&selector)
-        .next()
-        .unwrap()
-        .select(&span_selector)
-        .map(|e| e.text().next().unwrap().trim().to_string())
-        .collect::<Vec<_>>()
+    match entry.select(&selector).next() {
+        Some(val) => val
+            .select(&span_selector)
+            .map(|e| e.text().next().unwrap().trim().to_string())
+            .collect::<Vec<_>>(),
+        None => Vec::new(),
+    }
 }
 
 pub fn parse_entry(entry: &[String]) -> Definition {
