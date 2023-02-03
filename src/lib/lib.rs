@@ -86,12 +86,14 @@ pub async fn get_html(
 }
 
 /// Parse HTML webpage into [`Response`] object
-fn parse_html(html: String) -> Result<Response, scraper::error::SelectorErrorKind<'static>> {
-    let document = Html::parse_document(html.as_str());
-    let table_selector = Selector::parse(r#"table[class="WRD noTapHighlight"]"#)?;
+fn parse_html(html: String) -> Result<Response, String> {
+    let document: Html = Html::parse_document(html.as_str());
+    validate_word()?;
+    let table_selector: Selector =
+        Selector::parse(r#"table[class="WRD noTapHighlight"]"#).expect("Parsing 'table' failed");
 
-    let tr_selector = Selector::parse("tr")?;
-    let td_selector = Selector::parse("td")?;
+    let tr_selector: Selector = Selector::parse("tr").expect("Parsing 'tr' failed");
+    let td_selector: Selector = Selector::parse("td").expect("Parsing 'td' failed");
     let table = document.select(&table_selector).next().unwrap();
 
     let elements = table
@@ -151,39 +153,85 @@ pub async fn get_def(
     word: String,
     from: Option<String>,
     to: Option<String>,
-) -> Result<Response, ()> {
+) -> Result<Response, String> {
     let html = get_html(word, from, to).await.unwrap();
-    Ok(parse_html(html).unwrap())
+    parse_html(html)
+}
+
+fn validate_word() -> Result<bool, String> {
+    match Selector::parse(r#"p[id="noEntryFound"]"#) {
+        Ok(_) => Err("".to_string()),
+        Err(_) => Ok(true),
+    }
 }
 
 #[cfg(test)]
 mod tests {
     #[tokio::test]
-    async fn test_delantal() -> Result<(), ()> {
-        crate::get_def("delantal".to_string(), None, None).await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_nuevo() -> Result<(), ()> {
-        crate::get_def("nuevo".to_string(), None, None).await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_palabra() -> Result<(), ()> {
-        let res = crate::get_def("palabra".to_string(), None, None).await?;
-        for def in res.definitions {
-            let en_example = def.to.example;
-            assert_ne!(en_example, "n");
+    async fn test_delantal() -> Result<(), String> {
+        match crate::get_def("delantal".to_string(), None, None).await {
+            Ok(res) => {
+                assert_eq!(res.definitions.len(), 2);
+                Ok(())
+            }
+            Err(err) => Err(err),
         }
-        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_entregar() -> Result<(), String> {
+        match crate::get_def("entregar".to_string(), None, None).await {
+            Ok(res) => {
+                assert_eq!(res.definitions.len(), 11);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_nuevo() -> Result<(), String> {
+        match crate::get_def("nuevo".to_string(), None, None).await {
+            Ok(res) => {
+                assert_eq!(res.definitions.len(), 4);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_palabra() -> Result<(), String> {
+        match crate::get_def("palabra".to_string(), None, None).await {
+            Ok(res) => {
+                assert_eq!(res.definitions.len(), 2);
+                for def in res.definitions {
+                    let en_example = def.to.example;
+                    assert_ne!(en_example, "n");
+                }
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_invalid_word() -> Result<(), String> {
+        match crate::get_def("sjfadohjfahndkllhjra".to_string(), None, None).await {
+            Ok(_) => Err("Expected error".to_string()),
+            Err(_) => Ok(()),
+        }
     }
 
     #[tokio::test]
     #[ignore]
-    async fn english_to_spanish() -> Result<(), ()> {
-        crate::get_def("brick".to_string(), None, None).await?;
-        Ok(())
+    async fn english_to_spanish() -> Result<(), String> {
+        match crate::get_def("brick".to_string(), None, None).await {
+            Ok(res) => {
+                assert_eq!(res.definitions.len(), 3);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
     }
 }

@@ -9,7 +9,7 @@ use wordreference::{Definition, Response};
 
 /// Entrypoint for binary program
 #[tokio::main]
-async fn main() -> Result<(), ()> {
+async fn main() -> Result<(), String> {
     let mut words: Vec<Response> = Vec::new();
     let mut chosen_definitions: Vec<Definition> = Vec::new();
 
@@ -34,7 +34,7 @@ fn clear_term() {
 }
 
 /// Present the user with a menu for selecting a word
-async fn choose_word(words: &mut Vec<Response>) -> Result<bool, ()> {
+async fn choose_word(words: &mut Vec<Response>) -> Result<bool, String> {
     print!("Word {}: ", words.len() + 1);
     let input: String = read!("{}\n");
 
