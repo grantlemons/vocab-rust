@@ -7,6 +7,11 @@ use text_io::read;
 use wordreference as wr;
 use wordreference::{Definition, Response};
 
+#[cfg(not(target_os = "windows"))]
+const NEWLINE: &str = "\n";
+#[cfg(target_os = "windows")]
+const NEWLINE: &str = "\r\n";
+
 /// Entrypoint for binary program
 #[tokio::main]
 async fn main() -> Result<(), String> {
@@ -38,10 +43,10 @@ fn clear_term() {
 /// Present the user with a menu for selecting a word
 async fn choose_word(words: &mut Vec<Response>) -> Result<bool, String> {
     print!("Word {}: ", words.len() + 1);
-    let input: String = read!("{}\n");
+    let input: String = read!("{}{NEWLINE}");
 
-    if !input.trim().is_empty() {
-        let definitions = wr::get_def(input.trim().to_string(), None, None).await?;
+    if !input.is_empty() {
+        let definitions = wr::get_def(input, None, None).await?;
         words.push(definitions);
         Ok(true)
     } else {
@@ -67,7 +72,7 @@ fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) 
             );
         }
         print!("Index: ");
-        input = read!("{}\n");
+        input = read!("{}{NEWLINE}");
     }
 
     chosen_definitions.push(word.definitions.get(input - 1).unwrap().clone());
