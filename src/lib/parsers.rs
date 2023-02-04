@@ -92,7 +92,7 @@ fn parse_to_example(entry: &Html) -> Vec<String> {
 pub fn parse_entry(entry: &[String]) -> Definition {
     let fragment: String = format!(
         "<table><tbody>{}</tbody></table>",
-        entry.join("").replace("<br>", "")
+        entry.join("").replace("<br>", "").replace('⇒', "->")
     );
     let html = Html::parse_fragment(&fragment);
     Definition {
