@@ -69,7 +69,7 @@ Download and use the installation binary [here](https://forge.rust-lang.org/infr
 
 ## Compiling
 
-- Clone this project into a folder.
+- Clone this project into a directory.
 - Use the command line to run `cargo build --release`
 
 ## Executing
