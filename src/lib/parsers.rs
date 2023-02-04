@@ -7,8 +7,9 @@ fn parse_from_word(entry: &Html) -> String {
         .select(&selector)
         .next()
         .unwrap()
-        .inner_html()
-        .replace("<br>", "")
+        .text()
+        .next()
+        .unwrap()
         .trim()
         .to_string()
 }
@@ -89,7 +90,10 @@ fn parse_to_example(entry: &Html) -> Vec<String> {
 }
 
 pub fn parse_entry(entry: &[String]) -> Definition {
-    let fragment: String = format!("<table><tbody>{}</tbody></table>", entry.join(""));
+    let fragment: String = format!(
+        "<table><tbody>{}</tbody></table>",
+        entry.join("").replace("<br>", "")
+    );
     let html = Html::parse_fragment(&fragment);
     Definition {
         from: LanguageDefinition {
