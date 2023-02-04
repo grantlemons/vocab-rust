@@ -107,10 +107,10 @@ fn read_usize() -> usize {
 }
 
 #[cfg(target_os = "windows")]
-fn read_input() -> String {
+fn read_string() -> String {
     read!("{}\r\n")
 }
 #[cfg(target_os = "windows")]
 fn read_usize() -> usize {
-    read!("{}\n")
+    read!("{}\r\n")
 }
