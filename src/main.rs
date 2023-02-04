@@ -57,7 +57,7 @@ fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) 
         println!("========================================================================");
         for (index, def) in word.definitions.iter().enumerate() {
             println!(
-                "{:<3} {:<15} {:<10} {:<40} {:?} / {:?}",
+                "{:<3} {:<20} {:<10} {:<40} {:?} / {:?}",
                 format!("{:>3}", format!("{}:", index + 1)),
                 def.from.word,
                 format!("({})", def.from.part),
@@ -77,16 +77,16 @@ fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) 
 fn print_definitions(chosen_definitions: &Vec<Definition>) {
     stdout().execute(cursor::MoveTo(0, 0)).unwrap();
     println!(
-        "{:<4}{:<25}{:<4}|{:^20}|{:^20}|{:^40}|{:^20}|",
+        "|{:<4}{:<25}{:<4}|{:^20}|{:^20}|{:^40}|{:^20}|",
         "", "Palabra", "", "Categoría", "Fuente", "Definición y diccionario", "Contexto"
     );
     println!(
-        "{:=<4}{:=<25}{:=<4}|{:=<20}|{:=<20}|{:=<40}|{:=<20}|",
+        "|{:=<4}{:=<25}{:=<4}|{:=<20}|{:=<20}|{:=<40}|{:=<20}|",
         "", "", "", "", "", "", ""
     );
     for def in chosen_definitions {
         println!(
-            "{:<4}{:<25}{:<4}|{:^20}|{:^20}|{:^40}|{:^20}|",
+            "|{:<4}{:<25}{:<4}|{:^20}|{:^20}|{:^40}|{:^20}|",
             "",
             def.from.word,
             "",

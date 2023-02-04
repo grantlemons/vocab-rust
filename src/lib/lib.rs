@@ -170,6 +170,17 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_burgues() -> Result<(), String> {
+        match crate::get_def("burgués".to_string(), None, None).await {
+            Ok(res) => {
+                assert_eq!(res.definitions.len(), 2);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    #[tokio::test]
     async fn test_random_words() -> Result<(), String> {
         /* cspell: disable */
         let words: &[&str] = &[

@@ -7,9 +7,8 @@ fn parse_from_word(entry: &Html) -> String {
         .select(&selector)
         .next()
         .unwrap()
-        .text()
-        .next()
-        .unwrap()
+        .inner_html()
+        .replace("<br>", "")
         .trim()
         .to_string()
 }
