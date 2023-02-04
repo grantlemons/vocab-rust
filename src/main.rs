@@ -40,8 +40,8 @@ async fn choose_word(words: &mut Vec<Response>) -> Result<bool, String> {
     print!("Word {}: ", words.len() + 1);
     let input: String = read!("{}\n");
 
-    if !input.is_empty() {
-        let definitions = wr::get_def(input, None, None).await?;
+    if !input.trim().is_empty() {
+        let definitions = wr::get_def(input.trim().to_string(), None, None).await?;
         words.push(definitions);
         Ok(true)
     } else {
