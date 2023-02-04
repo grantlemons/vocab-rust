@@ -6,7 +6,7 @@ authors = ["Grant Lemons <grantlemons@aol.com>"]
 
 description = "A library to interact with wordreference.com"
 readme = "README.md"
-repository = "https://github.com/grantlemons/vocab-rust/"
+repository = "https://github.com/grantlemons/vocab-rust/tree/main/wordreference_scraper"
 license = "GPL-3.0"
 publish = true
 
