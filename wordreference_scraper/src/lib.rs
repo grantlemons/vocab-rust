@@ -6,7 +6,9 @@ use reqwest::header::USER_AGENT;
 use scraper::{Html, Selector};
 
 mod parsers;
-use parsers::*;
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Debug, Clone)]
 /// Struct that represents a definition in a language
@@ -87,7 +89,7 @@ fn parse_html(html: String) -> Result<Response, String> {
         if row_type_matches_last {
             entry.push(text.to_owned());
         } else {
-            entries.push(parse_entry(&entry));
+            entries.push(parsers::parse_entry(&entry));
             entry = vec![text.to_owned()];
         }
 
@@ -95,7 +97,7 @@ fn parse_html(html: String) -> Result<Response, String> {
         last_row_even = is_even;
     }
     if !entry.is_empty() {
-        entries.push(parse_entry(&entry));
+        entries.push(parsers::parse_entry(&entry));
     }
 
     Ok(Response {
@@ -104,7 +106,7 @@ fn parse_html(html: String) -> Result<Response, String> {
 }
 
 /// Takes a word and returns a [`Response`] struct
-pub async fn get_def(
+pub async fn get_defs(
     word: String,
     from: Option<String>,
     to: Option<String>,
@@ -120,102 +122,5 @@ fn validate_word(document: &Html) -> Result<bool, String> {
     match is_found {
         true => Err("Word not found".to_string()),
         false => Ok(true),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[tokio::test]
-    async fn test_delantal() -> Result<(), String> {
-        match crate::get_def("delantal".to_string(), None, None).await {
-            Ok(res) => {
-                assert_eq!(res.definitions.len(), 2);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_entregar() -> Result<(), String> {
-        match crate::get_def("entregar".to_string(), None, None).await {
-            Ok(res) => {
-                assert_eq!(res.definitions.len(), 11);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_nuevo() -> Result<(), String> {
-        match crate::get_def("nuevo".to_string(), None, None).await {
-            Ok(res) => {
-                assert_eq!(res.definitions.len(), 4);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_palabra() -> Result<(), String> {
-        match crate::get_def("palabra".to_string(), None, None).await {
-            Ok(res) => {
-                assert_eq!(res.definitions.len(), 2);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_burgues() -> Result<(), String> {
-        match crate::get_def("burgués".to_string(), None, None).await {
-            Ok(res) => {
-                assert_eq!(res.definitions.len(), 2);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_random_words() -> Result<(), String> {
-        /* cspell: disable */
-        let words: &[&str] = &[
-            "ladrillo",
-            "destilación",
-            "prolongado",
-            "alto",
-            "verte",
-            "hace",
-            "ya",
-            "puedo",
-        ];
-        /* cspell: enable */
-        for word in words {
-            crate::get_def(word.to_string(), None, None).await?;
-        }
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_invalid_word() -> Result<(), String> {
-        match crate::get_def("sjfadohjfahndkllhjra".to_string(), None, None).await {
-            Ok(_) => Err("Expected error".to_string()),
-            Err(_) => Ok(()),
-        }
-    }
-
-    #[tokio::test]
-    async fn english_to_spanish_brick() -> Result<(), String> {
-        match crate::get_def("brick".to_string(), None, None).await {
-            Ok(res) => {
-                assert_eq!(res.definitions.len(), 3);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
     }
 }

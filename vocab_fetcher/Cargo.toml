@@ -1,0 +1,12 @@
+[package]
+name = "vocab_fetcher"
+version = "0.1.0"
+edition = "2021"
+authors = ["Grant Lemons <grantlemons@aol.com>"]
+publish = false
+
+[dependencies]
+crossterm = "0.26.0"
+text_io = "0.1.12"
+tokio = { version = "1.25.0", features = ["full"] }
+wordreference_scraper = { path = "../wordreference_scraper" }

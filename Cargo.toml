@@ -1,22 +1,6 @@
-[package]
-name = "vocab_rust"
-version = "0.1.0"
-edition = "2021"
-authors = ["Grant Lemons <grant0lemons@gmail.com>"]
-publish = false
+[workspace]
 
-[dependencies]
-crossterm = "0.26.0"
-regex = "1.7.1"
-reqwest = "0.11.14"
-scraper = "0.14.0"
-text_io = "0.1.12"
-tokio = { version = "1.25.0", features = ["full"] }
-
-[[bin]]
-name = "vocab_completer"
-path = "src/main.rs"
-
-[lib]
-name = "wordreference"
-path = "src/lib/lib.rs"
+members = [
+    "vocab_fetcher",
+    "wordreference_scraper"
+]

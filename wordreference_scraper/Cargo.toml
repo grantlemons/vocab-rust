@@ -1,0 +1,17 @@
+[package]
+name = "wordreference_scraper"
+version = "0.1.0"
+edition = "2021"
+authors = ["Grant Lemons <grantlemons@aol.com>"]
+
+description = "A library to interact with wordreference.com"
+readme = "README.md"
+repository = "https://github.com/grantlemons/vocab-rust/"
+license = "GPL-3.0"
+publish = true
+
+[dependencies]
+regex = "1.7.1"
+reqwest = "0.11.14"
+scraper = "0.14.0"
+tokio = { version = "1.25.0", features = ["full"] }

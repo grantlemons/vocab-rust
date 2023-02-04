@@ -4,7 +4,7 @@
 use crossterm::{cursor, terminal, ExecutableCommand, QueueableCommand};
 use std::io::stdout;
 use text_io::read;
-use wordreference::{Definition, Response};
+use wordreference_scraper::{Definition, Response};
 
 /// Entrypoint for binary program
 #[tokio::main]
@@ -40,7 +40,7 @@ async fn choose_word(words: &mut Vec<Response>) -> Result<bool, String> {
     let input: String = read_string();
 
     if !input.is_empty() {
-        let definitions = wordreference::get_def(input, None, None).await?;
+        let definitions = wordreference_scraper::get_defs(input, None, None).await?;
         words.push(definitions);
         Ok(true)
     } else {
@@ -56,10 +56,10 @@ fn choose_definition(word: &Response, chosen_definitions: &mut Vec<Definition>) 
         println!("========================================================================");
         for (index, def) in word.definitions.iter().enumerate() {
             println!(
-                "{:<3} {:<20} {:<10} {:<40} {:?} / {:?}",
+                "{:<3} {:<20} {:<15} {:<40} {:?} / {:?}",
                 format!("{:>3}", format!("{}:", index + 1)),
                 def.from.word,
-                format!("({})", def.from.part),
+                def.from.part,
                 def.from.definition,
                 def.from.example,
                 def.to.example
