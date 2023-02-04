@@ -65,7 +65,7 @@ Once all words are inputted, a table will be printed like so.
 If not already installed, install Rust for your operating system and architecture.
 In all likelihood this is Windows and x86_64, but may be something else such as an arm-based architecture.
 
-Download and use the installation binary [here](https://forge.rust-lang.org/infra/other-installation-methods.html#standalone). In you are on x86_64 and Windows, this will be the [`x86_64-pc-windows-msvc` stable `msi` file.](https://static.rust-lang.org/dist/rust-1.67.0-x86_64-pc-windows-msvc.msi)
+Download and use the installation binary [here](https://forge.rust-lang.org/infra/other-installation-methods.html#standalone). If you are on x86_64 and Windows, this will be the [`x86_64-pc-windows-msvc` stable `msi` file.](https://static.rust-lang.org/dist/rust-1.67.0-x86_64-pc-windows-msvc.msi)
 
 ## Compiling
 
