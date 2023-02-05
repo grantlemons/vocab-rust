@@ -25,7 +25,13 @@ async fn main() -> Result<(), String> {
     if !chosen_definitions.is_empty() {
         print_definitions(&chosen_definitions);
     }
+    prevent_exit();
     Ok(())
+}
+
+fn prevent_exit() {
+    println!("\nPress enter to exit");
+    while std::io::stdin().read_line(&mut String::new()).is_err() {}
 }
 
 fn clear_term() {
